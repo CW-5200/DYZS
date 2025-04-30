@@ -1,10 +1,3 @@
-//
-//  DYYY
-//
-//  Copyright (c) 2024 huami. All rights reserved.
-//  Channel: @huamidev
-//  Created on: 2024/10/04
-//
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
@@ -65,8 +58,6 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 	}
 }
 
-%group needDelays
-
 %hook AWEAwemePlayVideoViewController
 
 - (void)setIsAutoPlay:(BOOL)arg0 {
@@ -78,27 +69,6 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 
 	%orig(arg0);
 }
-
-%end
-
-%hook AWEPlayInteractionUserAvatarElement
-- (void)onFollowViewClicked:(UITapGestureRecognizer *)gesture {
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYfollowTips"]) {
-
-		dispatch_async(dispatch_get_main_queue(), ^{
-		  [DYYYBottomAlertView showAlertWithTitle:@"关注确认"
-						  message:@"是否确认关注？"
-					     cancelAction:nil
-					    confirmAction:^{
-					      %orig(gesture);
-					    }];
-		});
-	} else {
-		%orig;
-	}
-}
-
-%end
 
 %end
 
@@ -318,80 +288,6 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 }
 %end
 
-%group DYYYSettingsGesture
-
-%hook UIWindow
-- (instancetype)initWithFrame:(CGRect)frame {
-	UIWindow *window = %orig(frame);
-	if (window) {
-		UILongPressGestureRecognizer *doubleFingerLongPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleFingerLongPressGesture:)];
-		doubleFingerLongPressGesture.numberOfTouchesRequired = 2;
-		[window addGestureRecognizer:doubleFingerLongPressGesture];
-	}
-	return window;
-}
-
-%new
-- (void)handleDoubleFingerLongPressGesture:(UILongPressGestureRecognizer *)gesture {
-	if (gesture.state == UIGestureRecognizerStateBegan) {
-		UIViewController *rootViewController = self.rootViewController;
-		if (rootViewController) {
-			UIViewController *settingVC = [[DYYYSettingViewController alloc] init];
-
-			if (settingVC) {
-				BOOL isIPad = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad;
-				if (@available(iOS 15.0, *)) {
-					if (!isIPad) {
-						settingVC.modalPresentationStyle = UIModalPresentationPageSheet;
-					} else {
-						settingVC.modalPresentationStyle = UIModalPresentationFullScreen;
-					}
-				} else {
-					settingVC.modalPresentationStyle = UIModalPresentationFullScreen;
-				}
-
-				if (settingVC.modalPresentationStyle == UIModalPresentationFullScreen) {
-					UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
-					[closeButton setTitle:@"关闭" forState:UIControlStateNormal];
-					closeButton.translatesAutoresizingMaskIntoConstraints = NO;
-
-					[settingVC.view addSubview:closeButton];
-
-					[NSLayoutConstraint activateConstraints:@[
-						[closeButton.trailingAnchor constraintEqualToAnchor:settingVC.view.trailingAnchor constant:-10],
-						[closeButton.topAnchor constraintEqualToAnchor:settingVC.view.topAnchor constant:40], [closeButton.widthAnchor constraintEqualToConstant:80],
-						[closeButton.heightAnchor constraintEqualToConstant:40]
-					]];
-
-					[closeButton addTarget:self action:@selector(closeSettings:) forControlEvents:UIControlEventTouchUpInside];
-				}
-
-				UIView *handleBar = [[UIView alloc] init];
-				handleBar.backgroundColor = [UIColor whiteColor];
-				handleBar.layer.cornerRadius = 2.5;
-				handleBar.translatesAutoresizingMaskIntoConstraints = NO;
-				[settingVC.view addSubview:handleBar];
-
-				[NSLayoutConstraint activateConstraints:@[
-					[handleBar.centerXAnchor constraintEqualToAnchor:settingVC.view.centerXAnchor],
-					[handleBar.topAnchor constraintEqualToAnchor:settingVC.view.topAnchor constant:8], [handleBar.widthAnchor constraintEqualToConstant:40],
-					[handleBar.heightAnchor constraintEqualToConstant:5]
-				]];
-
-				[rootViewController presentViewController:settingVC animated:YES completion:nil];
-			}
-		}
-	}
-}
-
-%new
-- (void)closeSettings:(UIButton *)button {
-	[button.superview.window.rootViewController dismissViewControllerAnimated:YES completion:nil];
-}
-%end
-
-%end
-
 %hook AWELongVideoControlModel
 - (bool)allowDownload {
 	return YES;
@@ -530,10 +426,6 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 %hook UIView
 
 - (void)setFrame:(CGRect)frame {
-
-	if ([self isKindOfClass:%c(AWEIMSkylightListView)] && [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisHiddenAvatarList"]) {
-		frame = CGRectZero;
-	}
 
 	if (![[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableCommentBlur"] && ![[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableFullScreen"]) {
 		%orig;
@@ -1010,31 +902,6 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 }
 %end
 
-%hook AWEFeedVideoButton
-- (id)touchUpInsideBlock {
-	id r = %orig;
-
-	// 只有收藏按钮才显示确认弹窗
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYcollectTips"] && [self.accessibilityLabel isEqualToString:@"收藏"]) {
-
-		dispatch_async(dispatch_get_main_queue(), ^{
-		  [DYYYBottomAlertView showAlertWithTitle:@"收藏确认"
-						  message:@"是否确认/取消收藏？"
-					     cancelAction:nil
-					    confirmAction:^{
-					      if (r && [r isKindOfClass:NSClassFromString(@"NSBlock")]) {
-						      ((void (^)(void))r)();
-					      }
-					    }];
-		});
-
-		return nil; // 阻止原始 block 立即执行
-	}
-
-	return r;
-}
-%end
-
 %hook AWEFeedProgressSlider
 
 // 在初始化时设置进度条样式
@@ -1432,67 +1299,9 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 			}
 		}
 	}
-	// 应用IP属地标签上移
-	NSString *ipScaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
-	if (ipScaleValue.length > 0) {
-		UIFont *originalFont = label.font;
-		CGRect originalFrame = label.frame;
-		CGFloat offset = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYIPLabelVerticalOffset"];
-		if (offset > 0) {
-			CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -offset);
-			label.transform = translationTransform;
-		} else {
-			CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -3);
-			label.transform = translationTransform;
-		}
-
-		label.font = originalFont;
-	}
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabsuijiyanse"]) {
-        // 随机生成3个颜色，suiji
-        UIColor *color1 = [UIColor colorWithRed:(CGFloat)arc4random_uniform(256) / 255.0 green:(CGFloat)arc4random_uniform(256) / 255.0 blue:(CGFloat)arc4random_uniform(256) / 255.0 alpha:1.0];
-        UIColor *color2 = [UIColor colorWithRed:(CGFloat)arc4random_uniform(256) / 255.0 green:(CGFloat)arc4random_uniform(256) / 255.0 blue:(CGFloat)arc4random_uniform(256) / 255.0 alpha:1.0];
-        UIColor *color3 = [UIColor colorWithRed:(CGFloat)arc4random_uniform(256) / 255.0 green:(CGFloat)arc4random_uniform(256) / 255.0 blue:(CGFloat)arc4random_uniform(256) / 255.0 alpha:1.0];
-	    
-        NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:label.text];
-        CFIndex length = [attributedText length];
-        for (CFIndex i = 0; i < length; i++) {
-            CGFloat progress = (CGFloat)i / (length == 0 ? 1 : length - 1);
-	    
-            UIColor *startColor;
-            UIColor *endColor;
-            CGFloat subProgress;
-	    
-            if (progress < 0.5) {
-                startColor = color1;
-                endColor = color2;
-                subProgress = progress * 2;
-            } else {
-                startColor = color2;
-                endColor = color3;
-                subProgress = (progress - 0.5) * 2;
-            }
-	    
-            CGFloat startRed, startGreen, startBlue, startAlpha;
-            CGFloat endRed, endGreen, endBlue, endAlpha;
-            [startColor getRed:&startRed green:&startGreen blue:&startBlue alpha:&startAlpha];
-            [endColor getRed:&endRed green:&endGreen blue:&endBlue alpha:&endAlpha];
-	    
-            CGFloat red = startRed + (endRed - startRed) * subProgress;
-            CGFloat green = startGreen + (endGreen - startGreen) * subProgress;
-            CGFloat blue = startBlue + (endBlue - startBlue) * subProgress;
-            CGFloat alpha = startAlpha + (endAlpha - startAlpha) * subProgress;
-	    
-            UIColor *currentColor = [UIColor colorWithRed:red green:green blue:blue alpha:alpha];
-            [attributedText addAttribute:NSForegroundColorAttributeName value:currentColor range:NSMakeRange(i, 1)];
-        }
-	    
-        label.attributedText = attributedText;
-	} else {
-	    NSString *labelColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYLabelColor"];
-	    if (labelColor.length > 0) {
-	    	label.textColor = [DYYYManager colorWithHexString:labelColor];
-	    }
+	NSString *labelColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYLabelColor"];
+	if (labelColor.length > 0) {
+		label.textColor = [DYYYManager colorWithHexString:labelColor];
 	}
 	return label;
 }
@@ -1633,89 +1442,6 @@ static CGFloat currentScale = 1.0;
 
 %end
 
-%hook AWEPlayInteractionDescriptionScrollView
-
-- (void)layoutSubviews {
-	%orig;
-
-	self.transform = CGAffineTransformIdentity;
-
-	// 添加文案垂直偏移支持
-	NSString *descriptionOffsetValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYDescriptionVerticalOffset"];
-	CGFloat verticalOffset = 0;
-	if (descriptionOffsetValue.length > 0) {
-		verticalOffset = [descriptionOffsetValue floatValue];
-	}
-
-	UIView *parentView = self.superview;
-	UIView *grandParentView = nil;
-
-	if (parentView) {
-		grandParentView = parentView.superview;
-	}
-}
-
-%end
-
-// 对新版文案的缩放（33.0以上）
-
-%hook AWEPlayInteractionDescriptionLabel
-
-- (void)layoutSubviews {
-	%orig;
-
-	self.transform = CGAffineTransformIdentity;
-
-	// 添加文案垂直偏移支持
-	NSString *descriptionOffsetValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYDescriptionVerticalOffset"];
-	CGFloat verticalOffset = 0;
-	if (descriptionOffsetValue.length > 0) {
-		verticalOffset = [descriptionOffsetValue floatValue];
-	}
-
-	UIView *parentView = self.superview;
-	UIView *grandParentView = nil;
-
-	if (parentView) {
-		grandParentView = parentView.superview;
-	}
-}
-
-%end
-
-%hook AWEUserNameLabel
-
-- (void)layoutSubviews {
-	%orig;
-
-	self.transform = CGAffineTransformIdentity;
-
-	// 添加垂直偏移支持
-	NSString *verticalOffsetValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameVerticalOffset"];
-	CGFloat verticalOffset = 0;
-	if (verticalOffsetValue.length > 0) {
-		verticalOffset = [verticalOffsetValue floatValue];
-	}
-
-	UIView *parentView = self.superview;
-	UIView *grandParentView = nil;
-
-	if (parentView) {
-		grandParentView = parentView.superview;
-	}
-
-	// 检查祖父视图是否为 AWEBaseElementView 类型
-	if (grandParentView && [grandParentView.superview isKindOfClass:%c(AWEBaseElementView)]) {
-		CGRect scaledFrame = grandParentView.frame;
-		CGFloat translationX = -scaledFrame.origin.x;
-
-		CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(translationX, verticalOffset);
-		grandParentView.transform = translationTransform;
-	}
-}
-
-%end
-
 %hook AWEFeedVideoButton
 
 - (void)setImage:(id)arg1 {
@@ -1793,7 +1519,6 @@ static CGFloat currentScale = 1.0;
 }
 
 %end
-
 
 // 去除启动视频广告
 %hook AWEAwesomeSplashFeedCellOldAccessoryView
@@ -1879,148 +1604,47 @@ static CGFloat currentScale = 1.0;
 
 %end
 
-
-// 应用内推送毛玻璃效果
-%hook AWEInnerNotificationWindow
-
-- (id)initWithFrame:(CGRect)frame {
-	id orig = %orig;
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableNotificationTransparency"]) {
-		[self setupBlurEffectForNotificationView];
-	}
-	return orig;
-}
+// 设置改顶栏标题
+%hook UILabel
 
 - (void)layoutSubviews {
-	%orig;
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableNotificationTransparency"]) {
-		[self setupBlurEffectForNotificationView];
-	}
+    // 调用原始的 layoutSubviews 方法
+    %orig;
+    
+    // 获取父视图是否是 AWEHPTopTabItemTextContentView
+    if ([self.superview isKindOfClass:NSClassFromString(@"AWEHPTopTabItemTextContentView")]) {
+                    
+        // 获取过滤关键词配置
+        NSString *filterKeywords = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYModifyTopTabText"];
+            
+        // 如果配置存在且格式正确
+        if (filterKeywords && [filterKeywords length] > 0) {
+                
+            // 将配置字符串按 "#" 分割
+            NSArray *keywordsArray = [filterKeywords componentsSeparatedByString:@"#"];
+                
+            // 获取原始 text 内容
+            NSString *originalText = self.text;
+                
+            // 查找配置中的关键词，并进行替换
+            for (NSString *keyword in keywordsArray) {
+                // 每个标题以 "=" 修改，前半部分是原始文本，后半部分是替换后的文本
+                NSArray *parts = [keyword componentsSeparatedByString:@"="];
+                if (parts.count == 2) {
+                    NSString *oldKeyword = parts[0]; // 原始文本
+                    NSString *newKeyword = parts[1]; // 新文本
+                        
+                    // 判断原始文本是否包含在当前 UILabel 的 text 中
+                    if ([originalText containsString:oldKeyword]) {
+                        // 替换文本
+                        self.text = [originalText stringByReplacingOccurrencesOfString:oldKeyword withString:newKeyword];
+                    }
+                }
+            }
+        }
+    }
 }
 
-- (void)didMoveToWindow {
-	%orig;
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableNotificationTransparency"]) {
-		[self setupBlurEffectForNotificationView];
-	}
-}
-
-- (void)didAddSubview:(UIView *)subview {
-	%orig;
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableNotificationTransparency"] && [NSStringFromClass([subview class]) containsString:@"AWEInnerNotificationContainerView"]) {
-		[self setupBlurEffectForNotificationView];
-	}
-}
-
-%new
-- (void)setupBlurEffectForNotificationView {
-	for (UIView *subview in self.subviews) {
-		if ([NSStringFromClass([subview class]) containsString:@"AWEInnerNotificationContainerView"]) {
-			[self applyBlurEffectToView:subview];
-			break;
-		}
-	}
-}
-
-%new
-- (void)applyBlurEffectToView:(UIView *)containerView {
-	if (!containerView) {
-		return;
-	}
-
-	containerView.backgroundColor = [UIColor clearColor];
-
-	float userRadius = [[[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNotificationCornerRadius"] floatValue];
-	if (userRadius < 0 || userRadius > 50) {
-		userRadius = 12;
-	}
-
-	containerView.layer.cornerRadius = userRadius;
-	containerView.layer.masksToBounds = YES;
-
-	for (UIView *subview in containerView.subviews) {
-		if ([subview isKindOfClass:[UIVisualEffectView class]] && subview.tag == 999) {
-			[subview removeFromSuperview];
-		}
-	}
-
-	BOOL isDarkMode = [DYYYManager isDarkMode];
-	UIBlurEffectStyle blurStyle = isDarkMode ? UIBlurEffectStyleDark : UIBlurEffectStyleLight;
-	UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:blurStyle];
-	UIVisualEffectView *blurView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-
-	blurView.frame = containerView.bounds;
-	blurView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	blurView.tag = 999;
-	blurView.layer.cornerRadius = userRadius;
-	blurView.layer.masksToBounds = YES;
-
-	float userTransparency = [[[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYCommentBlurTransparent"] floatValue];
-	if (userTransparency <= 0 || userTransparency > 1) {
-		userTransparency = 0.5;
-	}
-
-	blurView.alpha = userTransparency;
-
-	[containerView insertSubview:blurView atIndex:0];
-
-	[self clearBackgroundRecursivelyInView:containerView];
-
-	if (isDarkMode) {
-		[self setLabelsColorWhiteInView:containerView];
-	}
-}
-
-%new
-- (void)setLabelsColorWhiteInView:(UIView *)view {
-	for (UIView *subview in view.subviews) {
-		if ([subview isKindOfClass:[UILabel class]]) {
-			UILabel *label = (UILabel *)subview;
-			NSString *text = label.text;
-
-			if (![text isEqualToString:@"回复"] && ![text isEqualToString:@"查看"] && ![text isEqualToString:@"续火花"]) {
-				label.textColor = [UIColor whiteColor];
-			}
-		}
-		[self setLabelsColorWhiteInView:subview];
-	}
-}
-
-%new
-- (void)clearBackgroundRecursivelyInView:(UIView *)view {
-	for (UIView *subview in view.subviews) {
-		if ([subview isKindOfClass:[UIVisualEffectView class]] && subview.tag == 999 && [subview isKindOfClass:[UIButton class]]) {
-			continue;
-		}
-		subview.backgroundColor = [UIColor clearColor];
-		subview.opaque = NO;
-		[self clearBackgroundRecursivelyInView:subview];
-	}
-}
-
-%end
-
-//开启自动背景切换
-%hook AWESettingThemeManager
- 
-// 控制自动主题开关状态
-- (BOOL)isAutoChangeEnable {
-     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableAutoTheme"]) {
-         return YES; // 强制启用自动主题
-     }
-     return %orig; // 保持原始逻辑
-}
- 
-// 控制自动切换主题行为
-- (void)startAutoChangeThemeCanRequest:(BOOL)arg1 {
-     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableAutoTheme"]) {
-         BOOL newArg = YES; // 创建新变量避免直接修改参数
-         %orig(newArg);     // 调用原始方法并传入新参数
-         return;
-     }
-     %orig(arg1); // 保持原始参数调用
-}
- 
 %end
 
 // 为 AWEUserActionSheetView 添加毛玻璃效果和白色文字
@@ -2049,7 +1673,7 @@ static CGFloat currentScale = 1.0;
         UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
         blurEffectView.frame = self.containerView.bounds;
         blurEffectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        blurEffectView.alpha = 0.85; 
+        blurEffectView.alpha = 1.0; 
         blurEffectView.tag = 9999;
 
         [self.containerView insertSubview:blurEffectView atIndex:0];
@@ -2099,11 +1723,7 @@ static CGFloat currentScale = 1.0;
 %end
 
 %ctor {
-	%init(DYYYSettingsGesture);
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYUserAgreementAccepted"]) {
 		%init;
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		  %init(needDelays);
-		});
 	}
 }

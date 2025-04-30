@@ -128,8 +128,32 @@
 
 %end
 
-// 隐藏评论搜索
+// 隐藏评论区大家都在搜
 %hook AWECommentSearchAnchorView
+- (void)layoutSubviews {
+	%orig;
+
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCommentViews"]) {
+		[self setHidden:YES];
+	}
+}
+
+%end
+
+// 隐藏评论区去汽水听
+%hook AWECommentGuideLunaAnchorView
+- (void)layoutSubviews {
+	%orig;
+
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCommentViews"]) {
+		[self setHidden:YES];
+	}
+}
+
+%end
+
+// 隐藏评论区免费去看短剧
+%hook AWEShowPlayletCommentHeaderView
 - (void)layoutSubviews {
 	%orig;
 
@@ -142,44 +166,6 @@
 
 // 隐藏评论区定位
 %hook AWEPOIEntryAnchorView
-
-- (void)p_addViews {
-	// 检查用户偏好设置
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCommentViews"]) {
-		// 直接跳过视图添加流程
-		return;
-	}
-	// 执行原始方法
-	%orig;
-}
-
-- (void)setIconUrls:(id)arg1 defaultImage:(id)arg2 {
-	// 根据需求选择是否拦截资源加载
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCommentViews"]) {
-		// 可选：传入空值阻止资源加载
-		%orig(nil, nil);
-		return;
-	}
-	// 正常传递参数
-	%orig(arg1, arg2);
-}
-
-- (void)setContentSize:(CGSize)arg1 {
-	// 可选：动态调整尺寸计算逻辑
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCommentViews"]) {
-		// 计算不包含评论视图的尺寸
-		CGSize newSize = CGSizeMake(arg1.width, arg1.height - 44); // 示例减法
-		%orig(newSize);
-		return;
-	}
-	// 保持原有尺寸计算
-	%orig(arg1);
-}
-
-%end
-
-// 隐藏评论音乐
-%hook AWECommentGuideLunaAnchorView
 - (void)layoutSubviews {
 	%orig;
 
@@ -243,8 +229,9 @@
 		%init(CommentHeaderTemplateGroup, AWECommentPanelHeaderSwiftImpl_CommentHeaderTemplateAnchorView = commentHeaderTemplateClass);
 	}
 }
+//评论视图结束
 
-// 隐藏大家都在搜
+// 移除隐藏大家都在搜后留白
 %hook AWESearchAnchorListModel
 
 - (BOOL)hideWords {
@@ -850,21 +837,12 @@
 }
 %end
 
-// 隐藏作者作品集搜索
+// 隐藏视频上方搜索长框
 %hook AWESearchEntranceView
 
 - (void)layoutSubviews {
 
-	Class targetClass = NSClassFromString(@"AWESearchEntranceView");
-	if (!targetClass)
-		return;
-
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideInteractionSearch"]) {
-
-		SEL removeSel = NSSelectorFromString(@"removeFromSuperview");
-		if ([targetClass instancesRespondToSelector:removeSel]) {
-			[self performSelector:removeSel];
-		}
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideSearchEntrance"]) {
 		self.hidden = YES;
 		return;
 	}
@@ -916,6 +894,7 @@
 
 %end
 
+//热点提示
 %hook AWETemplateHotspotView
 
 - (void)layoutSubviews {
@@ -927,6 +906,20 @@
 	}
 }
 
+%end
+
+//隐藏下面底部热点框
+%hook AWENewHotSpotBottomBarView
+- (void)layoutSubviews {
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideHotspot"]) {
+		if ([self respondsToSelector:@selector(removeFromSuperview)]) {
+			[self removeFromSuperview];
+		}
+		self.hidden = YES;
+		return;
+	}
+	%orig;
+}
 %end
 
 // 隐藏关注直播
@@ -1473,30 +1466,6 @@
 + (NSUInteger)modernLongPressPanelStyleMode {
 	return DYYYGetBool(@"DYYYisEnableModern") ? 1 : 0;
 }
-%end
-
-// 聊天视频底部评论框背景透明
-%hook AWEIMFeedBottomQuickEmojiInputBar
-
-- (void)layoutSubviews {
-	%orig;
-
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideChatCommentBg"]) {
-		UIView *parentView = self.superview;
-		while (parentView) {
-			if ([NSStringFromClass([parentView class]) isEqualToString:@"UIView"]) {
-				dispatch_async(dispatch_get_main_queue(), ^{
-				  parentView.backgroundColor = [UIColor clearColor];
-				  parentView.layer.backgroundColor = [UIColor clearColor].CGColor;
-				  parentView.opaque = NO;
-				});
-				break;
-			}
-			parentView = parentView.superview;
-		}
-	}
-}
-
 %end
 
 // 移除极速版我的片面红包横幅

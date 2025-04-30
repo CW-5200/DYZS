@@ -318,7 +318,7 @@ static void showUserAgreementAlert() {
 	showTextInputAlert(
 	    @"用户协议", @"", @"",
 	    ^(NSString *text) {
-	      if ([text isEqualToString:@"我已阅读并同意继续使用"]) {
+	      if ([text isEqualToString:@"同意"]) {
 		      setUserDefaults(@"YES", @"DYYYUserAgreementAccepted");
 	      } else {
 		      [DYYYManager showToast:@"请正确输入内容"];
@@ -360,8 +360,7 @@ static void showUserAgreementAlert() {
 		  BOOL hasAgreed = getUserDefaults(@"DYYYUserAgreementAccepted");
 		  if (!hasAgreed) {
 			  showAboutDialog(@"用户协议",
-					  @"本插件为开源项目\n仅供学习交流用途\n如有侵权请联系, GitHub 仓库：huami1314/DYYY\n请遵守当地法律法规, "
-					  @"逆向工程仅为学习目的\n盗用源码进行商业用途/发布但未标记开源项目必究\n详情请参阅项目内 MIT 许可证\n\n请输入\"我已阅读并同意继续使用\"以继续",
+					  @"插件仅为学习交流\n请勿进行商业用途\n\n请输入\"同意\"以继续",
 					  ^{
 					    showUserAgreementAlert();
 					  });
@@ -444,7 +443,7 @@ static void showUserAgreementAlert() {
 			      @"cellType" : @26,
 			      @"imageName" : @"ic_playertime_outlined_20"},
 			    @{@"identifier" : @"DYYYTimelineVerticalPosition",
-			      @"title" : @"进度纵轴位置",
+			      @"title" : @"时长纵轴位置",
 			      @"detail" : @"-12.5",
 			      @"cellType" : @26,
 			      @"imageName" : @"ic_playertime_outlined_20"},
@@ -457,12 +456,7 @@ static void showUserAgreementAlert() {
 			      @"title" : @"启用自动播放",
 			      @"detail" : @"",
 			      @"cellType" : @6,
-			      @"imageName" : @"ic_play_outlined_12"},
-			    @{@"identifier" : @"DYYYDefaultSpeed",
-			      @"title" : @"设置默认倍速",
-			      @"detail" : @"",
-			      @"cellType" : @26,
-			      @"imageName" : @"ic_speed_outlined_20"},
+			      @"imageName" : @"ic_squaretriangle_outlined_20"},
 			    @{@"identifier" : @"DYYYisEnableArea",
 			      @"title" : @"时间属地显示",
 			      @"detail" : @"",
@@ -473,11 +467,6 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"十六进制",
 			      @"cellType" : @26,
 			      @"imageName" : @"ic_location_outlined_20"},
-			    @{@"identifier" : @"DYYYEnabsuijiyanse",
-			      @"title" : @"属地随机渐变",
-			      @"detail" : @"",
-			      @"cellType" : @6,
-			      @"imageName" : @"ic_location_outlined_20"}
 		    ];
 
 		    for (NSDictionary *dict in videoSettings) {
@@ -564,11 +553,6 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
-			    @{@"identifier" : @"DYYYisEnablePure",
-			      @"title" : @"启用首页净化",
-			      @"detail" : @"",
-			      @"cellType" : @6,
-			      @"imageName" : @"ic_broom_outlined"},
 			    @{@"identifier" : @"DYYYisEnableFullScreen",
 			      @"title" : @"启用首页全屏",
 			      @"detail" : @"",
@@ -580,7 +564,7 @@ static void showUserAgreementAlert() {
 			    AWESettingItemModel *item = [self createSettingItem:dict cellTapHandlers:cellTapHandlers];
 			    [miscellaneousItems addObject:item];
 		    }
-		    // 【过滤与屏蔽】分类
+		    // 【过滤屏蔽】分类
 		    NSMutableArray<AWESettingItemModel *> *filterItems = [NSMutableArray array];
 		    NSArray *filterSettings = @[
 			    @{@"identifier" : @"DYYYisSkipLive",
@@ -792,33 +776,12 @@ static void showUserAgreementAlert() {
 			    [filterItems addObject:item];
 		    }
 
-		    // 【二次确认】分类
-		    NSMutableArray<AWESettingItemModel *> *securityItems = [NSMutableArray array];
-		    NSArray *securitySettings = @[
-			    @{@"identifier" : @"DYYYfollowTips",
-			      @"title" : @"关注二次确认",
-			      @"detail" : @"",
-			      @"cellType" : @6,
-			      @"imageName" : @"ic_userplus_outlined_20"},
-			    @{@"identifier" : @"DYYYcollectTips",
-			      @"title" : @"收藏二次确认",
-			      @"detail" : @"",
-			      @"cellType" : @6,
-			      @"imageName" : @"ic_collection_outlined_20"}
-		    ];
-
-		    for (NSDictionary *dict in securitySettings) {
-			    AWESettingItemModel *item = [self createSettingItem:dict cellTapHandlers:cellTapHandlers];
-			    [securityItems addObject:item];
-		    }
-
 		    // 创建并组织所有section
 		    NSMutableArray *sections = [NSMutableArray array];
 		    [sections addObject:createSection(@"外观设置", appearanceItems)];
 		    [sections addObject:createSection(@"视频播放", videoItems)];
 		    [sections addObject:createSection(@"杂项设置", miscellaneousItems)];
-		    [sections addObject:createSection(@"过滤与屏蔽", filterItems)];
-		    [sections addObject:createSection(@"二次确认", securityItems)];
+		    [sections addObject:createSection(@"过滤屏蔽", filterItems)];
 
 		    // 创建并推入二级设置页面
 		    AWESettingBaseViewController *subVC = createSubSettingsViewController(@"基本设置", sections);
@@ -847,11 +810,6 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"0-1小数",
 			      @"cellType" : @26,
 			      @"imageName" : @"ic_module_outlined_20"},
-			    @{@"identifier" : @"DYYYGlobalTransparency",
-			      @"title" : @"设置全局透明",
-			      @"detail" : @"0-1小数",
-			      @"cellType" : @26,
-			      @"imageName" : @"ic_eye_outlined_20"},
 			    @{@"identifier" : @"DYYYAvatarViewTransparency",
 			      @"title" : @"首页头像透明",
 			      @"detail" : @"0-1小数",
@@ -867,16 +825,6 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"0-1小数",
 			      @"cellType" : @26,
 			      @"imageName" : @"ic_eye_outlined_20"},
-			    @{@"identifier" : @"DYYYEnableNotificationTransparency",
-			      @"title" : @"通知玻璃效果",
-			      @"detail" : @"",
-			      @"cellType" : @6,
-			      @"imageName" : @"ic_comment_outlined_20"},
-			    @{@"identifier" : @"DYYYNotificationCornerRadius",
-			      @"title" : @"通知圆角半径",
-			      @"detail" : @"默认12",
-			      @"cellType" : @26,
-			      @"imageName" : @"ic_comment_outlined_20"},
 		    ];
 
 		    for (NSDictionary *dict in transparencySettings) {
@@ -884,11 +832,11 @@ static void showUserAgreementAlert() {
 			    [transparencyItems addObject:item];
 		    }
 
-		    // 【缩放与大小】分类
+		    // 【缩放自定义】分类
 		    NSMutableArray<AWESettingItemModel *> *scaleItems = [NSMutableArray array];
 		    NSArray *scaleSettings = @[
 			    @{@"identifier" : @"DYYYElementScale",
-			      @"title" : @"右侧栏缩放度",
+			      @"title" : @"右侧边栏缩放",
 			      @"detail" : @"不填默认",
 			      @"cellType" : @26,
 			      @"imageName" : @"ic_zoomin_outlined_20"},
@@ -897,21 +845,6 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"不填默认",
 			      @"cellType" : @26,
 			      @"imageName" : @"ic_zoomin_outlined_20"},
-			    @{@"identifier" : @"DYYYNicknameVerticalOffset",
-			      @"title" : @"昵称下移距离",
-			      @"detail" : @"不填默认",
-			      @"cellType" : @26,
-			      @"imageName" : @"ic_pensketch_outlined_20"},
-			    @{@"identifier" : @"DYYYDescriptionVerticalOffset",
-			      @"title" : @"文案下移距离",
-			      @"detail" : @"不填默认",
-			      @"cellType" : @26,
-			      @"imageName" : @"ic_pensketch_outlined_20"},
-			    @{@"identifier" : @"DYYYIPLabelVerticalOffset",
-			      @"title" : @"属地上移距离",
-			      @"detail" : @"默认为 3",
-			      @"cellType" : @26,
-			      @"imageName" : @"ic_pensketch_outlined_20"},
 		    ];
 
 		    for (NSDictionary *dict in scaleSettings) {
@@ -922,11 +855,16 @@ static void showUserAgreementAlert() {
 		    // 【标题自定义】分类
 		    NSMutableArray<AWESettingItemModel *> *titleItems = [NSMutableArray array];
 		    NSArray *titleSettings = @[
+			    @{@"identifier" : @"DYYYModifyTopTabText",
+			      @"title" : @"设置顶栏标题",
+			      @"detail" : @"标题=修改#标题=修改",
+			      @"cellType" : @26,
+			      @"imageName" : @"ic_tag_outlined_20"},
 			    @{@"identifier" : @"DYYYIndexTitle",
 			      @"title" : @"设置首页标题",
 			      @"detail" : @"不填默认",
 			      @"cellType" : @26,
-			      @"imageName" : @"ic_squaretriangle_outlined_20"},
+			      @"imageName" : @"ic_pensketch_outlined_20"},
 			    @{@"identifier" : @"DYYYFriendsTitle",
 			      @"title" : @"设置朋友标题",
 			      @"detail" : @"不填默认",
@@ -963,7 +901,7 @@ static void showUserAgreementAlert() {
 		    // 将图标自定义section添加到sections数组
 		    NSMutableArray *sections = [NSMutableArray array];
 		    [sections addObject:createSection(@"透明度设置", transparencyItems)];
-		    [sections addObject:createSection(@"缩放与大小", scaleItems)];
+		    [sections addObject:createSection(@"缩放自定义", scaleItems)];
 		    [sections addObject:createSection(@"标题自定义", titleItems)];
 		    [sections addObject:createSection(@"图标自定义", iconItems)];
 		    // 创建并组织所有section
@@ -1016,6 +954,11 @@ static void showUserAgreementAlert() {
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
 			    @{@"identifier" : @"DYYYisHiddenJia",
 			      @"title" : @"隐藏底栏加号",
+			      @"detail" : @"",
+			      @"cellType" : @6,
+			      @"imageName" : @"ic_eyeslash_outlined_16"},
+			    @{@"identifier" : @"DYYYHideMyButton",
+			      @"title" : @"隐藏底栏我的",
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
@@ -1129,11 +1072,6 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
-			    @{@"identifier" : @"DYYYisHiddenAvatarList",
-			      @"title" : @"隐藏消息头像列表",
-			      @"detail" : @"",
-			      @"cellType" : @6,
-			      @"imageName" : @"ic_eyeslash_outlined_16"},
 			    @{@"identifier" : @"DYYYisHiddenAvatarBubble",
 			      @"title" : @"隐藏消息头像气泡",
 			      @"detail" : @"",
@@ -1155,7 +1093,7 @@ static void showUserAgreementAlert() {
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
 			    @{@"identifier" : @"DYYYHidePostView",
-			      @"title" : @"隐藏我的页发作品",
+			      @"title" : @"隐藏用户导航提示",
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"}
@@ -1190,6 +1128,11 @@ static void showUserAgreementAlert() {
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
 			    @{@"identifier" : @"DYYYHideInteractionSearch",
 			      @"title" : @"隐藏相关搜索",
+			      @"detail" : @"",
+			      @"cellType" : @6,
+			      @"imageName" : @"ic_eyeslash_outlined_16"},
+			    @{@"identifier" : @"DYYYHideSearchEntrance",
+			      @"title" : @"隐藏长框搜索",
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
@@ -1303,11 +1246,6 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
-			    @{@"identifier" : @"DYYYHideCommentViews",
-			      @"title" : @"隐藏评论视图",
-			      @"detail" : @"",
-			      @"cellType" : @6,
-			      @"imageName" : @"ic_eyeslash_outlined_16"},
 			    @{@"identifier" : @"DYYYHideLiveCapsuleView",
 			      @"title" : @"隐藏直播胶囊",
 			      @"detail" : @"",
@@ -1333,8 +1271,8 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
-			    @{@"identifier" : @"DYYYHideChatCommentBg",
-			      @"title" : @"隐藏聊天评论",
+			    @{@"identifier" : @"DYYYHideCommentViews",
+			      @"title" : @"隐藏评论视图",
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
@@ -1941,11 +1879,6 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_at_outlined_20"},
-			    @{@"identifier" : @"DYYYisEnableAutoTheme",
-			      @"title" : @"启用自动背景切换",
-			      @"detail" : @"",
-			      @"cellType" : @6,
-			      @"imageName" : @"ic_gearsimplify_outlined_20"},
 			    @{@"identifier" : @"DYYYisEnableModern",
 			      @"title" : @"启用新版玻璃面板",
 			      @"detail" : @"",
@@ -2036,13 +1969,6 @@ static void showUserAgreementAlert() {
 						@"detail" : @"",
 						@"cellType" : @6,
 						@"imageName" : @"ic_heart_outlined_20"},
-					      @{
-						      @"identifier" : @"DYYYDoubleTapshowDislikeOnVideo",
-						      @"title" : @"长按面板",
-						      @"detail" : @"",
-						      @"cellType" : @6,
-						      @"imageName" : @"ic_xiaoxihuazhonghua_outlined_20"
-					      },
 					      @{@"identifier" : @"DYYYDoubleTapshowSharePanel",
 						@"title" : @"分享视频",
 						@"detail" : @"",
@@ -2555,12 +2481,10 @@ static void showUserAgreementAlert() {
 				    @"版本: " DYYY_VERSION_STRING @"\n\n"
 				    @"感谢使用DYYY\n\n"
 				    @"感谢huami开源\n\n"
-				    @"@维他入我心 基于DYYY二次开发\n\n"
-				    @"感谢huami group中群友的支持赞助\n\n"
-				    @"Telegram @huamidev\n\n"
-				    @"Telegram @vita_app\n\n"
+				    @"感谢Wtrwx二次开发\n\n"
+				    @"感谢群友的支持赞助\n\n"
 				    @"开源地址 huami1314/DYYY\n\n"
-				    @"仓库地址 Wtrwx/DYYY\n\n",
+				    @"开源地址 Wtrwx/DYYY\n\n",
 				    nil);
 		  };
 		  [aboutItems addObject:aboutItem];
@@ -2598,7 +2522,7 @@ static void showUserAgreementAlert() {
 		  mainSection.itemArray = mainItems;
 		  aboutSection.itemArray = aboutItems;
 
-		  viewModel.sectionDataArray = @[ mainSection, backupSection, aboutSection ];
+		  viewModel.sectionDataArray = @[ mainSection, backupSection ];
 		  objc_setAssociatedObject(settingsVC, kViewModelKey, viewModel, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 		  [rootVC.navigationController pushViewController:(UIViewController *)settingsVC animated:YES];
 		};
@@ -2699,10 +2623,9 @@ static void showUserAgreementAlert() {
 		BOOL isEnabled = getUserDefaults(@"DYYYEnableDanmuColor");
 		item.isEnable = isEnabled;
 	} else if ([item.identifier isEqualToString:@"DYYYCommentBlurTransparent"]) {
-		// 毛玻璃透明度依赖于评论区毛玻璃开关或通知玻璃效果开关
-		BOOL isCommentBlurEnabled = getUserDefaults(@"DYYYisEnableCommentBlur");
-		BOOL isNotificationBlurEnabled = getUserDefaults(@"DYYYEnableNotificationTransparency");
-		item.isEnable = isCommentBlurEnabled || isNotificationBlurEnabled;
+		// 毛玻璃透明度依赖于评论区毛玻璃开关
+		BOOL isEnabled = getUserDefaults(@"DYYYisEnableCommentBlur");
+		item.isEnable = isEnabled;
 	} else if ([item.identifier isEqualToString:@"DYYYShowAllVideoQuality"]) {
 		// 清晰度选项依赖于接口解析URL是否设置
 		NSString *interfaceUrl = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYInterfaceDownload"];
@@ -2729,10 +2652,6 @@ static void showUserAgreementAlert() {
 		   [item.identifier isEqualToString:@"DYYYTimelineVerticalPosition"]) {
 		// 进度时长相关设置依赖于显示进度时长开关
 		BOOL isEnabled = getUserDefaults(@"DYYYisShowScheduleDisplay");
-		item.isEnable = isEnabled;
-	} else if ([item.identifier isEqualToString:@"DYYYNotificationCornerRadius"]) {
-		// 通知角度依赖于通知开关
-		BOOL isEnabled = getUserDefaults(@"DYYYEnableNotificationTransparency");
 		item.isEnable = isEnabled;
 	}
 	// 添加悬浮按钮依赖关系
@@ -2837,15 +2756,12 @@ static void showUserAgreementAlert() {
 				continue;
 
 			AWESettingItemModel *item = (AWESettingItemModel *)itemObj;
+
 			// 更新依赖项状态
 			if ([identifier isEqualToString:@"DYYYEnableDanmuColor"] && [item.identifier isEqualToString:@"DYYYdanmuColor"]) {
 				item.isEnable = [value boolValue];
-			} else if (([identifier isEqualToString:@"DYYYisEnableCommentBlur"] || [identifier isEqualToString:@"DYYYEnableNotificationTransparency"]) &&
-				   [item.identifier isEqualToString:@"DYYYCommentBlurTransparent"]) {
-				// 如果任一玻璃效果开启，则启用透明度设置项
-				BOOL isCommentBlurEnabled = getUserDefaults(@"DYYYisEnableCommentBlur");
-				BOOL isNotificationBlurEnabled = getUserDefaults(@"DYYYEnableNotificationTransparency");
-				item.isEnable = isCommentBlurEnabled || isNotificationBlurEnabled;
+			} else if ([identifier isEqualToString:@"DYYYisEnableCommentBlur"] && [item.identifier isEqualToString:@"DYYYCommentBlurTransparent"]) {
+				item.isEnable = [value boolValue];
 			} else if ([identifier isEqualToString:@"DYYYInterfaceDownload"]) {
 				if ([item.identifier isEqualToString:@"DYYYShowAllVideoQuality"] || [item.identifier isEqualToString:@"DYYYDoubleInterfaceDownload"]) {
 					// 对于字符串值，检查是否有内容

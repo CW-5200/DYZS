@@ -18,7 +18,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 + (void)showText:(NSString *)text;
 @end
 
-
 @interface AWEURLModel : NSObject
 - (NSArray *)originURLList;
 - (id)URI;
@@ -142,7 +141,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWENormalModeTabBarBadgeContainerView : UIView
-
 @end
 
 @interface AWEFeedContainerContentView : UIView
@@ -166,7 +164,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 - (void)performCommentAction;
 - (void)performLikeAction;
 - (void)showSharePanel;
-- (void)showDislikeOnVideo;
 - (void)onVideoPlayerViewDoubleClicked:(id)arg1;
 - (UIViewController *)firstAvailableUIViewController;
 - (void)speedButtonTapped:(id)sender;
@@ -187,7 +184,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @interface AWEAwemePlayVideoViewController : UIViewController
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context;
 - (void)setVideoControllerPlaybackRate:(double)arg0;
-
 @end
 
 @interface AWEDanmakuItemTextInfo : NSObject
@@ -196,31 +192,24 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWECommentMiniEmoticonPanelView : UIView
-
 @end
 
 @interface AWEBaseElementView : UIView
-
 @end
 
 @interface AWESearchEntranceView : UIView
-
 @end
 
 @interface AWETextViewInternal : UITextView
-
 @end
 
 @interface AWECommentPublishGuidanceView : UIView
-
 @end
 
 @interface AWEPlayInteractionFollowPromptView : UIView
-
 @end
 
 @interface AWENormalModeTabBarTextView : UIView
-
 @end
 
 @interface AWEPlayInteractionNewBaseController : UIView
@@ -235,7 +224,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWEAdAvatarView : UIView
-
 @end
 
 @interface AWENormalModeTabBar : UIView
@@ -243,11 +231,9 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWEPlayInteractionListenFeedView : UIView
-
 @end
 
 @interface AWEFeedLiveMarkView : UIView
-
 @end
 
 @interface AWEPlayInteractionTimestampElement : UIView
@@ -289,7 +275,14 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @interface AWEPlayInteractionSearchAnchorView : UIView
 @end
 
+//热点提示
 @interface AWETemplateHotspotView : UIView
+@end
+
+//下面底部热点
+@interface AWENewHotSpotBottomBarView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
 @end
 
 @interface AWEAwemeMusicInfoView : UIView
@@ -322,16 +315,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, strong) UICollectionView *collectionView;
 @property (nonatomic, strong) NSArray *dataArray;
 @property (nonatomic, strong) AWELongPressPanelViewGroupModel *longPressViewGroupModel;
-@end
-
-@interface AWEModernLongPressHorizontalSettingItemCell : UICollectionViewCell
-@property (nonatomic, strong) UIView *contentView;
-@property (nonatomic, strong) UIImageView *buttonIcon;
-@property (nonatomic, strong) UILabel *buttonLabel;
-@property (nonatomic, strong) UIView *separator;
-@property (nonatomic, strong) AWELongPressPanelBaseViewModel *longPressPanelVM;
-
-- (void)updateUI:(AWELongPressPanelBaseViewModel *)viewModel;
 @end
 
 @interface AWEModernLongPressInteractiveCell : UITableViewCell
@@ -587,12 +570,22 @@ typedef NS_ENUM(NSInteger, MediaType) {
 
 @interface IESLiveActivityBannnerView : UIView
 @end
+
+//评论区大家搜
 @interface AWECommentSearchAnchorView : UIView
 - (void)setHidden:(BOOL)hidden;
 - (BOOL)isHidden;
 - (void)layoutSubviews;
 @end
 
+//评论区免费去看短剧
+@interface AWEShowPlayletCommentHeaderView : UIView
+- (void)setHidden:(BOOL)hidden;
+- (BOOL)isHidden;
+- (void)layoutSubviews;
+@end
+
+//评论区定位头部
 @interface AWEPOIEntryAnchorView : UIView
 - (void)setHidden:(BOOL)hidden;
 - (BOOL)isHidden;
@@ -600,10 +593,16 @@ typedef NS_ENUM(NSInteger, MediaType) {
 - (void)p_processModels:(id)models withPOIName:(id)poiName;
 @end
 
+//评论区去汽水听
 @interface AWECommentGuideLunaAnchorView : UIView
 - (void)setHidden:(BOOL)hidden;
 - (BOOL)isHidden;
 - (void)layoutSubviews;
+@end
+
+//隐藏评论区大家都在搜留白
+@interface AWESearchAnchorListModel : NSObject
+- (id)init;
 @end
 
 @interface AWEFeedTopBarContainer : UIView
@@ -664,10 +663,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 - (void)updateIndicatorWithPageCount:(NSInteger)count; 
 @end
 
-@interface AWESearchAnchorListModel : NSObject
-- (id)init;
-@end
-
 @interface AWEPlayInteractionAvatarView : UIView
 @property(nonatomic, readonly) NSArray *subviews;
 @property(nonatomic, readonly) CGRect frame;
@@ -675,14 +670,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 
 //直播间流量提醒弹窗
 @interface AWELiveFlowAlertView : UIView
-@end
-
-//搜索视频底部评论视图
-@interface AWECommentInputBackgroundView : UIView
-@end
-
-//聊天视频底部快速回复视图
-@interface AWEIMFeedBottomQuickEmojiInputBar : UIView
 @end
 
 @interface DUXBadge : UIView
@@ -701,14 +688,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWEHPTopBarCTAItemView : UIView
-@end
-
-//应用内推送容器
-@interface AWEInnerNotificationWindow : UIWindow
-- (void)setupBlurEffectForNotificationView;
-- (void)applyBlurEffectToView:(UIView *)containerView;
-- (void)setLabelsColorWhiteInView:(UIView *)view;
-- (void)clearBackgroundRecursivelyInView:(UIView *)view;
 @end
 
 @interface AWEFakeProgressSliderView : UIView

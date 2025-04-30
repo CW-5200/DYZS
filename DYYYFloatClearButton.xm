@@ -1,9 +1,3 @@
-/*
- * Tweak Name: 1KeyHideDYUI
- * Target App: com.ss.iphone.ugc.Aweme
- * Dev: @c00kiec00k 曲奇的坏品味🍻
- * iOS Version: 16.5
- */
 #import "DYYYManager.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -23,6 +17,8 @@ static BOOL isInPlayInteractionVC = NO;
 // 计时器属性
 @property(nonatomic, strong) NSTimer *checkTimer;
 @property(nonatomic, strong) NSTimer *fadeTimer;
+// 新增属性：用于显示 GIF 动画
+@property(nonatomic, strong) UIImageView *gifImageView;
 // 方法声明
 - (void)resetFadeTimer;
 - (void)hideUIElements;
@@ -86,8 +82,7 @@ static void initTargetClassNames(void) {
 	targetClassNames = @[
 		@"AWEHPTopBarCTAContainer", @"AWEHPDiscoverFeedEntranceView", @"AWELeftSideBarEntranceView", @"DUXBadge", @"AWEBaseElementView", @"AWEElementStackView",
 		@"AWEPlayInteractionDescriptionLabel", @"AWEUserNameLabel", @"AWEStoryProgressSlideView", @"AWEStoryProgressContainerView", @"ACCEditTagStickerView", @"AWEFeedTemplateAnchorView",
-		@"AWESearchFeedTagView", @"AWEPlayInteractionSearchAnchorView", @"AFDRecommendToFriendTagView", @"AWELandscapeFeedEntryView", @"AWEFeedAnchorContainerView", @"AFDAIbumFolioView",
-		@"AWENormalModeTabBar"
+		@"AWESearchFeedTagView", @"AWEPlayInteractionSearchAnchorView", @"AFDRecommendToFriendTagView", @"AWELandscapeFeedEntryView", @"AWEFeedAnchorContainerView", @"AFDAIbumFolioView"
 	];
 }
 @implementation HideUIButton
@@ -97,12 +92,12 @@ static void initTargetClassNames(void) {
 		self.backgroundColor = [UIColor clearColor];
 		self.layer.cornerRadius = frame.size.width / 2;
 		self.layer.masksToBounds = YES;
-		self.isElementsHidden = NO;
+		self.isElementsHidden = NO;  // 默认显示
 		self.hiddenViewsList = [NSMutableArray array];
         
         // 设置默认状态为半透明
-        self.originalAlpha = 1.0;  // 交互时为完全不透明
-        self.alpha = 0.5;  // 初始为半透明
+        self.originalAlpha = 0.8;  // 交互时为完全1.0不透明
+        self.alpha = 0.8;  // 初始为半透明
 		// 加载保存的锁定状态
 		[self loadLockState];
 		[self loadIcons];
@@ -113,7 +108,9 @@ static void initTargetClassNames(void) {
 		[self addTarget:self action:@selector(handleTouchDown) forControlEvents:UIControlEventTouchDown];
 		[self addTarget:self action:@selector(handleTouchUpInside) forControlEvents:UIControlEventTouchUpInside];
 		[self addTarget:self action:@selector(handleTouchUpOutside) forControlEvents:UIControlEventTouchUpOutside];
+		// 添加长按手势（长按时间为2秒）
 		UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+		longPressGesture.minimumPressDuration = 2.0;  // 设置2秒长按
 		[self addGestureRecognizer:longPressGesture];
 		[self startPeriodicCheck];
 		[self resetFadeTimer];
@@ -140,7 +137,7 @@ static void initTargetClassNames(void) {
 							   block:^(NSTimer *timer) {
 							     [UIView animateWithDuration:0.3
 									      animations:^{
-										self.alpha = 0.5;  // 变为半透明
+										self.alpha = 0.8;  // 变为半透明
 									      }];
 							   }];
 	// 交互时变为完全不透明
@@ -216,9 +213,9 @@ static void initTargetClassNames(void) {
         
         [animatedImageView startAnimating];
     } else {
-        [self setTitle:@"隐藏" forState:UIControlStateNormal];
-        [self setTitle:@"显示" forState:UIControlStateSelected];
-        self.titleLabel.font = [UIFont systemFontOfSize:10];
+        [self setTitle:@"🤡" forState:UIControlStateNormal];
+        [self setTitle:@"🤡" forState:UIControlStateSelected];
+        self.titleLabel.font = [UIFont systemFontOfSize:25];
     }
 }
 - (void)handleTouchDown {
@@ -258,23 +255,22 @@ static void initTargetClassNames(void) {
 	}
 }
 - (void)handleTap {
-    if (isAppInTransition)
-        return;
-    [self resetFadeTimer];  // 这会使按钮变为完全不透明
-    if (!self.isElementsHidden) {
-        [self hideUIElements];
-        self.isElementsHidden = YES;
-        self.selected = YES;
-    } else {
-        forceResetAllUIElements();
+	if (isAppInTransition)
+		return;
+	[self resetFadeTimer];  // 这会使按钮变为完全不透明
+	if (!self.isElementsHidden) {
+		[self hideUIElements];
+		self.isElementsHidden = YES;
+		self.selected = YES;
+	} else {
+		forceResetAllUIElements();
         // 还原 AWEPlayInteractionProgressContainerView 视图
-        [self restoreAWEPlayInteractionProgressContainerView]; 
-        self.isElementsHidden = NO;
-        [self.hiddenViewsList removeAllObjects];
-        self.selected = NO;
-    }
+        [self restoreAWEPlayInteractionProgressContainerView];
+		self.isElementsHidden = NO;
+		[self.hiddenViewsList removeAllObjects];
+		self.selected = NO;
+	}
 }
-
 - (void)restoreAWEPlayInteractionProgressContainerView {
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
         for (UIWindow *window in [UIApplication sharedApplication].windows) {
@@ -309,8 +305,8 @@ static void initTargetClassNames(void) {
 	}
 }
 - (void)hideUIElements {
-    [self.hiddenViewsList removeAllObjects];
-    [self findAndHideViews:targetClassNames];
+	[self.hiddenViewsList removeAllObjects];
+	[self findAndHideViews:targetClassNames];
     // 新增隐藏 AWEPlayInteractionProgressContainerView 视图
     [self hideAWEPlayInteractionProgressContainerView];
     self.isElementsHidden = YES;
@@ -485,7 +481,7 @@ static void initTargetClassNames(void) {
     // 提前准备按钮显示
     if (hideButton) {
         hideButton.hidden = NO;
-        hideButton.alpha = 0.5;
+        hideButton.alpha = 0.8;
     }
 }
 - (void)viewWillAppear:(BOOL)animated {
@@ -494,7 +490,7 @@ static void initTargetClassNames(void) {
     // 立即显示按钮
     if (hideButton) {
         hideButton.hidden = NO;
-        hideButton.alpha = 0.5;
+        hideButton.alpha = 0.8;
     }
 }
 - (void)viewDidAppear:(BOOL)animated {
@@ -548,7 +544,7 @@ static void initTargetClassNames(void) {
         
         CGFloat buttonSize = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYEnableFloatClearButtonSize"] ?: 40.0;
         hideButton = [[HideUIButton alloc] initWithFrame:CGRectMake(0, 0, buttonSize, buttonSize)];
-        hideButton.alpha = 0.5;
+        hideButton.alpha = 1.0;
         
         NSString *savedPositionString = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYHideUIButtonPosition"];
         if (savedPositionString) {
