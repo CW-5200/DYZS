@@ -249,7 +249,33 @@
 
         [viewModels addObject:allImagesViewModel];
     }
+    
+    // 接口保存功能
+    NSString *apiKey = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYInterfaceDownload"];
+    if (enableApiDownload && apiKey.length > 0) {
+        AWELongPressPanelBaseViewModel *apiDownload = [[%c(AWELongPressPanelBaseViewModel) alloc] init];
+        apiDownload.awemeModel = self.awemeModel;
+        apiDownload.actionType = 673;
+        apiDownload.duxIconName = @"ic_cloudarrowdown_outlined_20";
+        apiDownload.describeString = @"接口保存";
 
+        apiDownload.action = ^{
+          NSString *shareLink = [self.awemeModel valueForKey:@"shareURL"];
+          if (shareLink.length == 0) {
+              [DYYYManager showToast:@"无法获取分享链接"];
+              return;
+          }
+
+          // 使用封装的方法进行解析下载
+          [DYYYManager parseAndDownloadVideoWithShareLink:shareLink apiKey:apiKey];
+
+          AWELongPressPanelManager *panelManager = [%c(AWELongPressPanelManager) shareInstance];
+          [panelManager dismissWithAnimation:YES completion:nil];
+        };
+
+        [viewModels addObject:apiDownload];
+    }
+    
     // 复制文案功能
     if (enableCopyText) {
         AWELongPressPanelBaseViewModel *copyText = [[%c(AWELongPressPanelBaseViewModel) alloc] init];
@@ -288,32 +314,6 @@
         };
 
         [viewModels addObject:copyShareLink];
-    }
-
-    // 接口保存功能
-    NSString *apiKey = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYInterfaceDownload"];
-    if (enableApiDownload && apiKey.length > 0) {
-        AWELongPressPanelBaseViewModel *apiDownload = [[%c(AWELongPressPanelBaseViewModel) alloc] init];
-        apiDownload.awemeModel = self.awemeModel;
-        apiDownload.actionType = 673;
-        apiDownload.duxIconName = @"ic_cloudarrowdown_outlined_20";
-        apiDownload.describeString = @"接口保存";
-
-        apiDownload.action = ^{
-          NSString *shareLink = [self.awemeModel valueForKey:@"shareURL"];
-          if (shareLink.length == 0) {
-              [DYYYManager showToast:@"无法获取分享链接"];
-              return;
-          }
-
-          // 使用封装的方法进行解析下载
-          [DYYYManager parseAndDownloadVideoWithShareLink:shareLink apiKey:apiKey];
-
-          AWELongPressPanelManager *panelManager = [%c(AWELongPressPanelManager) shareInstance];
-          [panelManager dismissWithAnimation:YES completion:nil];
-        };
-
-        [viewModels addObject:apiDownload];
     }
     
     // 过滤用户功能
@@ -480,6 +480,9 @@
             firstRowCount = totalButtons;
         } else if (totalButtons <= 4) {
             firstRowCount = totalButtons / 2;
+            secondRowCount = totalButtons - firstRowCount;
+        } else if (totalButtons <= 5) {
+            firstRowCount = 3;
             secondRowCount = totalButtons - firstRowCount;
         } else if (totalButtons <= 6) {
             firstRowCount = 4;
