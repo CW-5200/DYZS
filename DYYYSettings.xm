@@ -7,6 +7,7 @@
 #import "DYYYABTestHook.h"
 
 #import "DYYYAboutDialogView.h"
+#import "DYYYBottomAlertView.h"
 #import "DYYYCustomInputView.h"
 #import "DYYYIconOptionsDialogView.h"
 #import "DYYYKeywordListView.h"
@@ -37,7 +38,7 @@ static void showIconOptionsDialog(NSString *title, UIImage *previewImage, NSStri
 
 @interface DYYYBackupPickerDelegate : NSObject <UIDocumentPickerDelegate>
 @property(nonatomic, copy) void (^completionBlock)(NSURL *url);
-@property(nonatomic, copy) NSString *tempFilePath; // 添加临时文件路径属性
+@property(nonatomic, copy) NSString *tempFilePath;
 @end
 
 @implementation DYYYBackupPickerDelegate
@@ -46,12 +47,10 @@ static void showIconOptionsDialog(NSString *title, UIImage *previewImage, NSStri
 		self.completionBlock(urls.firstObject);
 	}
 
-	// 清理临时文件
 	[self cleanupTempFile];
 }
 
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
-	// 用户取消操作时清理临时文件
 	[self cleanupTempFile];
 }
 
@@ -1131,6 +1130,11 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
+			    @{@"identifier" : @"DYYYHideSearchSame",
+			      @"title" : @"隐藏搜索同款",
+			      @"detail" : @"",
+			      @"cellType" : @6,
+			      @"imageName" : @"ic_eyeslash_outlined_16"},
 			    @{@"identifier" : @"DYYYHideSearchEntrance",
 			      @"title" : @"隐藏长框搜索",
 			      @"detail" : @"",
@@ -1281,13 +1285,13 @@ static void showUserAgreementAlert() {
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
-			    @{@"identifier" : @"DYYYHidekeyboardai",
-			      @"title" : @"隐藏键盘AI",
+			    @{@"identifier" : @"DYYYHidePanelDaily",
+			      @"title" : @"隐藏面板日常",
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
-			    @{@"identifier" : @"DYYYHidePanelDaily",
-			      @"title" : @"隐藏面板日常",
+			    @{@"identifier" : @"DYYYHidekeyboardai",
+			      @"title" : @"隐藏键盘AI",
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"}
@@ -1333,6 +1337,16 @@ static void showUserAgreementAlert() {
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
 			    @{@"identifier" : @"DYYYHideKTVSongIndicator",
 			      @"title" : @"隐藏直播点歌",
+			      @"detail" : @"",
+			      @"cellType" : @6,
+			      @"imageName" : @"ic_eyeslash_outlined_16"},
+			    @{@"identifier" : @"DYYYHideLiveGoodsMsg",
+			      @"title" : @"隐藏商品信息",
+			      @"detail" : @"",
+			      @"cellType" : @6,
+			      @"imageName" : @"ic_eyeslash_outlined_16"},
+			    @{@"identifier" : @"DYYYHideLiveLikeAnimation",
+			      @"title" : @"隐藏点赞动画",
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"},
@@ -1545,7 +1559,12 @@ static void showUserAgreementAlert() {
 			      @"title" : @"长按面板过滤标题",
 			      @"detail" : @"",
 			      @"cellType" : @6,
-			      @"imageName" : @"ic_funnel_outlined_20"}
+			      @"imageName" : @"ic_funnel_outlined_20"},
+				@{@"identifier" : @"DYYYLongPressTimerClose",
+			      @"title" : @"长按定时关闭抖音",
+			      @"detail" : @"",
+			      @"cellType" : @6,
+			      @"imageName" : @"ic_c_alarm_outlined"}
 		    ];
 
 		    for (NSDictionary *dict in longPressSettings) {
@@ -1777,7 +1796,6 @@ static void showUserAgreementAlert() {
 			// 获取选择的文件路径
 			NSString *sourcePath = [url path];
 
-			// 目标路径
 			NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 			NSString *documentsDirectory = [paths firstObject];
 			NSString *dyyyFolderPath = [documentsDirectory stringByAppendingPathComponent:@"DYYY"];
@@ -1805,7 +1823,6 @@ static void showUserAgreementAlert() {
 				// 重置全局变量，下次加载时会重新读取文件
 				gFixedABTestData = nil;
 				onceToken = 0;
-				// 重新加载配置
 				loadFixedABTestData();
 				message = @"配置文件已导入，请禁用下发配置，重启抖音生效";
 			} else {
@@ -1833,7 +1850,7 @@ static void showUserAgreementAlert() {
 		    deleteConfigItem.title = @"删除本地配置";
 		    deleteConfigItem.detail = @"";
 		    deleteConfigItem.type = 0;
-		    deleteConfigItem.svgIconImageName = @"ic_xmark_outlined_20";
+		    deleteConfigItem.svgIconImageName = @"ic_trash_outlined_20";
 		    deleteConfigItem.cellType = 26;
 		    deleteConfigItem.colorStyle = 0;
 		    deleteConfigItem.isEnable = YES;
@@ -1845,9 +1862,7 @@ static void showUserAgreementAlert() {
 		      NSString *dyyyFolderPath = [documentsDirectory stringByAppendingPathComponent:@"DYYY"];
 		      NSString *configPath = [dyyyFolderPath stringByAppendingPathComponent:@"abtest_data_fixed.json"];
 
-		      // 检查文件是否存在
 		      if ([[NSFileManager defaultManager] fileExistsAtPath:configPath]) {
-			      // 删除文件
 			      NSError *error = nil;
 			      BOOL success = [[NSFileManager defaultManager] removeItemAtPath:configPath error:&error];
 
@@ -1855,16 +1870,12 @@ static void showUserAgreementAlert() {
 				      // 重置全局变量
 				      gFixedABTestData = nil;
 				      onceToken = 0;
-
-				      // 显示成功提示
 				      [DYYYManager showToast:@"本地配置已删除成功"];
 			      } else {
-				      // 显示错误信息
 				      NSString *errorMsg = [NSString stringWithFormat:@"删除失败: %@", error.localizedDescription];
 				      [DYYYManager showToast:errorMsg];
 			      }
 		      } else {
-			      // 文件不存在
 			      [DYYYManager showToast:@"本地配置不存在"];
 		      }
 		    };
@@ -1927,7 +1938,7 @@ static void showUserAgreementAlert() {
 				      NSMutableArray<AWESettingItemModel *> *doubleTapItems = [NSMutableArray array];
 				      AWESettingItemModel *enableDoubleTapMenu = [self createSettingItem:@{
 					      @"identifier" : @"DYYYEnableDoubleOpenAlertController",
-					      @"title" : @"启用双击打开菜单",
+					      @"title" : @"启用双击菜单",
 					      @"detail" : @"",
 					      @"cellType" : @6,
 					      @"imageName" : @"ic_xiaoxihuazhonghua_outlined_20"
@@ -1935,6 +1946,11 @@ static void showUserAgreementAlert() {
 				      [doubleTapItems addObject:enableDoubleTapMenu];
 
 				      NSArray *doubleTapFunctions = @[
+					      @{@"identifier" : @"DYYYisEnableSheetBlur",
+						@"title" : @"菜单玻璃效果",
+						@"detail" : @"",
+						@"cellType" : @6,
+						@"imageName" : @"ic_list_outlined"},
 					      @{@"identifier" : @"DYYYDoubleTapDownload",
 						@"title" : @"保存视频/图片",
 						@"detail" : @"",
@@ -1945,6 +1961,7 @@ static void showUserAgreementAlert() {
 						@"detail" : @"",
 						@"cellType" : @6,
 						@"imageName" : @"ic_boxarrowdown_outlined"},
+
 					      @{
 						      @"identifier" : @"DYYYDoubleInterfaceDownload",
 						      @"title" : @"接口保存",
@@ -2043,7 +2060,7 @@ static void showUserAgreementAlert() {
 		    NSString *savedSpeedSettings = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYSpeedSettings"];
 		    // 如果没有设置过，使用默认值
 		    if (!savedSpeedSettings || savedSpeedSettings.length == 0) {
-			    savedSpeedSettings = @"1.0,1.25,1.5,2.0";
+			    savedSpeedSettings = @"1.0,2.0,3.0";
 		    }
 		    speedSettingsItem.detail = [NSString stringWithFormat:@"%@", savedSpeedSettings];
 		    speedSettingsItem.cellTappedBlock = ^{
@@ -2119,8 +2136,8 @@ static void showUserAgreementAlert() {
 		    AWESettingItemModel *buttonSizeItem = [[%c(AWESettingItemModel) alloc] init];
 		    buttonSizeItem.identifier = @"DYYYSpeedButtonSize";
 		    buttonSizeItem.title = @"快捷倍速按钮大小";
-		    // 获取当前的按钮大小，如果没有设置则默认为32
-		    CGFloat currentButtonSize = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYSpeedButtonSize"] ?: 32;
+		    // 获取当前的按钮大小，如果没有设置则默认为20
+		    CGFloat currentButtonSize = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYSpeedButtonSize"] ?: 20;
 		    buttonSizeItem.detail = [NSString stringWithFormat:@"%.0f", currentButtonSize];
 		    buttonSizeItem.type = 0;
 		    buttonSizeItem.svgIconImageName = @"ic_zoomin_outlined_20";
@@ -2187,8 +2204,8 @@ static void showUserAgreementAlert() {
 		    AWESettingItemModel *clearButtonSizeItem = [[%c(AWESettingItemModel) alloc] init];
 		    clearButtonSizeItem.identifier = @"DYYYEnableFloatClearButtonSize";
 		    clearButtonSizeItem.title = @"清屏按钮大小";
-		    // 获取当前的按钮大小，如果没有设置则默认为40
-		    CGFloat currentClearButtonSize = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYEnableFloatClearButtonSize"] ?: 40;
+		    // 获取当前的按钮大小，如果没有设置则默认为32
+		    CGFloat currentClearButtonSize = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYEnableFloatClearButtonSize"] ?: 32;
 		    clearButtonSizeItem.detail = [NSString stringWithFormat:@"%.0f", currentClearButtonSize];
 		    clearButtonSizeItem.type = 0;
 		    clearButtonSizeItem.svgIconImageName = @"ic_zoomin_outlined_20";
@@ -2235,15 +2252,24 @@ static void showUserAgreementAlert() {
 		    AWESettingItemModel *clearButtonIcon = createIconCustomizationItem(@"DYYYClearButtonIcon", @"清屏按钮图标", @"ic_roaming_outlined", @"qingping.gif");
 
 		    [clearButtonItems addObject:clearButtonIcon];
-		    // 清屏隐藏时间进度 enableqingButton 需要改名
+		    // 清屏移除时间进度 enableqingButton 需要改名
 		    AWESettingItemModel *enableqingButton = [self
 			createSettingItem:
 			    @{@"identifier" : @"DYYYEnabshijianjindu",
-			      @"title" : @"清屏隐藏进度",
+			      @"title" : @"清屏移除进度",
 			      @"detail" : @"",
 			      @"cellType" : @6,
 			      @"imageName" : @"ic_eyeslash_outlined_16"}];
 		    [clearButtonItems addObject:enableqingButton];
+		    // 清屏隐藏时间进度
+		    AWESettingItemModel *enableqingButton1 = [self
+			createSettingItem:
+			    @{@"identifier" : @"DYYYHideTimeProgress",
+			      @"title" : @"清屏隐藏进度",
+			      @"detail" : @"",
+			      @"cellType" : @6,
+			      @"imageName" : @"ic_eyeslash_outlined_16"}];
+		    [clearButtonItems addObject:enableqingButton1];
 		    // 获取清屏按钮的当前开关状态
 		    BOOL isEnabled = getUserDefaults(@"DYYYEnableFloatClearButton");
 		    // 更新清屏按钮大小和图标设置项的启用状态
@@ -2459,6 +2485,143 @@ static void showUserAgreementAlert() {
 		  [backupItems addObject:restoreItem];
 		  backupSection.itemArray = backupItems;
 
+		  // 创建清理section
+		  AWESettingSectionModel *cleanupSection = [[%c(AWESettingSectionModel) alloc] init];
+		  cleanupSection.sectionHeaderTitle = @"清理";
+		  cleanupSection.sectionHeaderHeight = 40;
+		  cleanupSection.type = 0;
+		  NSMutableArray<AWESettingItemModel *> *cleanupItems = [NSMutableArray array];
+		  AWESettingItemModel *cleanSettingsItem = [[%c(AWESettingItemModel) alloc] init];
+		  cleanSettingsItem.identifier = @"DYYYCleanSettings";
+		  cleanSettingsItem.title = @"清除设置";
+		  cleanSettingsItem.detail = @"";
+		  cleanSettingsItem.type = 0;
+		  cleanSettingsItem.svgIconImageName = @"ic_trash_outlined_20";
+		  cleanSettingsItem.cellType = 26;
+		  cleanSettingsItem.colorStyle = 0;
+		  cleanSettingsItem.isEnable = YES;
+		  cleanSettingsItem.cellTappedBlock = ^{
+		    [DYYYBottomAlertView showAlertWithTitle:@"清除设置"
+			message:@"请选择要清除的设置类型"
+			cancelButtonText:@"清除抖音设置"
+			confirmButtonText:@"清除插件设置"
+			cancelAction:^{
+			  // 清除抖音设置的确认对话框
+			  [DYYYBottomAlertView showAlertWithTitle:@"清除抖音设置"
+							  message:@"确定要清除抖音所有设置吗？\n这将无法恢复，应用会自动退出！"
+						 cancelButtonText:@"取消"
+						confirmButtonText:@"确定"
+						     cancelAction:nil
+						    confirmAction:^{
+						      NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+						      if (paths.count > 0) {
+							      NSString *preferencesPath = [paths.firstObject stringByAppendingPathComponent:@"Preferences"];
+							      NSString *bundleIdentifier = [[NSBundle mainBundle] bundleIdentifier];
+							      NSString *plistPath = [preferencesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.plist", bundleIdentifier]];
+
+							      NSError *error = nil;
+							      [[NSFileManager defaultManager] removeItemAtPath:plistPath error:&error];
+
+							      if (!error) {
+								      [DYYYManager showToast:@"抖音设置已清除，应用即将退出"];
+
+								      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+									exit(0);
+								      });
+							      } else {
+								      [DYYYManager showToast:[NSString stringWithFormat:@"清除失败: %@", error.localizedDescription]];
+							      }
+						      }
+						    }];
+			}
+			confirmAction:^{
+			  // 清除插件设置的确认对话框
+			  [DYYYBottomAlertView showAlertWithTitle:@"清除插件设置"
+							  message:@"确定要清除所有插件设置吗？\n这将无法恢复！"
+						 cancelButtonText:@"取消"
+						confirmButtonText:@"确定"
+						     cancelAction:nil
+						    confirmAction:^{
+						      // 获取所有以DYYY开头的NSUserDefaults键值并清除
+						      NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+						      NSDictionary *allDefaults = [defaults dictionaryRepresentation];
+
+						      for (NSString *key in allDefaults.allKeys) {
+							      if ([key hasPrefix:@"DYYY"]) {
+								      [defaults removeObjectForKey:key];
+							      }
+						      }
+						      [defaults synchronize];
+
+						      // 显示成功提示
+						      [DYYYManager showToast:@"插件设置已清除，请重启应用"];
+						    }];
+			}];
+		  };
+		  [cleanupItems addObject:cleanSettingsItem];
+		  AWESettingItemModel *cleanCacheItem = [[%c(AWESettingItemModel) alloc] init];
+		  cleanCacheItem.identifier = @"DYYYCleanCache";
+		  cleanCacheItem.title = @"清理缓存";
+		  cleanCacheItem.detail = @"";
+		  cleanCacheItem.type = 0;
+		  cleanCacheItem.svgIconImageName = @"ic_broom_outlined";
+		  cleanCacheItem.cellType = 26;
+		  cleanCacheItem.colorStyle = 0;
+		  cleanCacheItem.isEnable = YES;
+
+		  cleanCacheItem.cellTappedBlock = ^{
+		    [DYYYBottomAlertView showAlertWithTitle:@"清理缓存"
+						    message:@"确定要清理缓存吗？\n这将删除临时文件和缓存"
+					   cancelButtonText:@"取消"
+					  confirmButtonText:@"确定"
+					       cancelAction:nil
+					      confirmAction:^{
+						NSFileManager *fileManager = [NSFileManager defaultManager];
+						NSError *error = nil;
+						NSUInteger totalSize = 0;
+
+						NSString *tempDir = NSTemporaryDirectory();
+
+						NSArray<NSString *> *customDirs = @[ @"Caches", @"BDByteCast", @"kitelog" ];
+						NSString *libraryDir = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject;
+
+						NSMutableArray<NSString *> *allPaths = [NSMutableArray arrayWithObjects:tempDir, nil];
+						for (NSString *sub in customDirs) {
+							NSString *full = [libraryDir stringByAppendingPathComponent:sub];
+							[allPaths addObject:full];
+						}
+
+						for (NSString *basePath in allPaths) {
+							if (![fileManager fileExistsAtPath:basePath]) {
+								continue;
+							}
+							NSDirectoryEnumerator<NSString *> *enumerator = [fileManager enumeratorAtPath:basePath];
+							NSString *relPath = nil;
+							while ((relPath = [enumerator nextObject])) {
+								NSString *fullPath = [basePath stringByAppendingPathComponent:relPath];
+
+								NSDictionary<NSFileAttributeKey, id> *attrs = [fileManager attributesOfItemAtPath:fullPath error:nil];
+								if (attrs) {
+									totalSize += [attrs fileSize];
+								}
+
+								NSError *delErr = nil;
+								[fileManager removeItemAtPath:fullPath error:&delErr];
+								if (delErr) {
+									NSLog(@"删除失败 %@: %@", fullPath, delErr);
+								}
+							}
+						}
+
+						float sizeInMB = totalSize / 1024.0 / 1024.0;
+						NSString *toastMsg = [NSString stringWithFormat:@"已清理 %.2f MB 的缓存", sizeInMB];
+						[DYYYManager showToast:toastMsg];
+					      }];
+		  };
+		  [cleanupItems addObject:cleanCacheItem];
+
+		  cleanupSection.itemArray = cleanupItems;
+
 		  // 创建关于分类（单独section）
 		  AWESettingSectionModel *aboutSection = [[%c(AWESettingSectionModel) alloc] init];
 		  aboutSection.sectionHeaderTitle = @"关于";
@@ -2522,7 +2685,7 @@ static void showUserAgreementAlert() {
 		  mainSection.itemArray = mainItems;
 		  aboutSection.itemArray = aboutItems;
 
-		  viewModel.sectionDataArray = @[ mainSection, backupSection ];
+		  viewModel.sectionDataArray = @[ mainSection, cleanupSection, backupSection ];
 		  objc_setAssociatedObject(settingsVC, kViewModelKey, viewModel, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 		  [rootVC.navigationController pushViewController:(UIViewController *)settingsVC animated:YES];
 		};
@@ -2607,6 +2770,10 @@ static void showUserAgreementAlert() {
 			  BOOL isSwitchOn = !strongItem.isSwitchOn;
 			  strongItem.isSwitchOn = isSwitchOn;
 			  setUserDefaults(@(isSwitchOn), strongItem.identifier);
+
+			  if ([strongItem.identifier isEqualToString:@"DYYYForceDownloadEmotion"] && isSwitchOn) {
+				  showAboutDialog(@"防蠢提示", @"这里指的是长按整条评论而非表情图片", nil);
+			  }
 			  [self handleConflictsAndDependenciesForSetting:strongItem.identifier isEnabled:isSwitchOn];
 		  }
 		};
@@ -2664,6 +2831,10 @@ static void showUserAgreementAlert() {
 		// 清屏按钮图标和大小设置依赖于清屏按钮开关
 		BOOL isEnabled = getUserDefaults(@"DYYYEnableFloatClearButton");
 		item.isEnable = isEnabled;
+	} else if ([item.identifier isEqualToString:@"DYYYHideTimeProgress"]) {
+		// 清屏隐藏时间进度依赖于清屏移除时间进度未启用
+		BOOL isEnabled = getUserDefaults(@"DYYYEnabshijianjindu");
+		item.isEnable = !isEnabled;
 	}
 }
 

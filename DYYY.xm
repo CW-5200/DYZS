@@ -1604,104 +1604,97 @@ static CGFloat currentScale = 1.0;
 
 %end
 
-// 设置改顶栏标题
-%hook UILabel
+// 设置修改顶栏标题
+%hook AWEHPTopTabItemTextContentView
 
 - (void)layoutSubviews {
-    // 调用原始的 layoutSubviews 方法
     %orig;
-    
-    // 获取父视图是否是 AWEHPTopTabItemTextContentView
-    if ([self.superview isKindOfClass:NSClassFromString(@"AWEHPTopTabItemTextContentView")]) {
-                    
-        // 获取过滤关键词配置
-        NSString *filterKeywords = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYModifyTopTabText"];
-            
-        // 如果配置存在且格式正确
-        if (filterKeywords && [filterKeywords length] > 0) {
-                
-            // 将配置字符串按 "#" 分割
-            NSArray *keywordsArray = [filterKeywords componentsSeparatedByString:@"#"];
-                
-            // 获取原始 text 内容
-            NSString *originalText = self.text;
-                
-            // 查找配置中的关键词，并进行替换
-            for (NSString *keyword in keywordsArray) {
-                // 每个标题以 "=" 修改，前半部分是原始文本，后半部分是替换后的文本
-                NSArray *parts = [keyword componentsSeparatedByString:@"="];
-                if (parts.count == 2) {
-                    NSString *oldKeyword = parts[0]; // 原始文本
-                    NSString *newKeyword = parts[1]; // 新文本
-                        
-                    // 判断原始文本是否包含在当前 UILabel 的 text 中
-                    if ([originalText containsString:oldKeyword]) {
-                        // 替换文本
-                        self.text = [originalText stringByReplacingOccurrencesOfString:oldKeyword withString:newKeyword];
-                    }
-                }
+
+    NSString *topTitleConfig = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYModifyTopTabText"];
+    if (topTitleConfig.length == 0) return;
+
+    NSArray *titlePairs = [topTitleConfig componentsSeparatedByString:@"#"];
+
+    NSString *accessibilityLabel = nil;
+    if ([self.superview respondsToSelector:@selector(accessibilityLabel)]) {
+        accessibilityLabel = self.superview.accessibilityLabel;
+    }
+    if (accessibilityLabel.length == 0) return;
+
+    for (NSString *pair in titlePairs) {
+        NSArray *components = [pair componentsSeparatedByString:@"="];
+        if (components.count != 2) continue;
+
+        NSString *originalTitle = components[0];
+        NSString *newTitle = components[1];
+
+        if ([accessibilityLabel isEqualToString:originalTitle]) {
+            if ([self respondsToSelector:@selector(setContentText:)]) {
+                [self setContentText:newTitle];
+            } else {
+                [self setValue:newTitle forKey:@"contentText"];
             }
+            break;
         }
     }
 }
 
 %end
 
-// 为 AWEUserActionSheetView 添加毛玻璃效果和白色文字
+// 为 AWEUserActionSheetView 添加毛玻璃效果
 %hook AWEUserActionSheetView
 
 - (void)layoutSubviews {
-    %orig;
-    [self applyBlurEffectAndWhiteText];
+	%orig;
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableSheetBlur"]) {
+        [self applyBlurEffectAndWhiteText];
+    }
 }
-
-
 
 %new
 - (void)applyBlurEffectAndWhiteText {
-    // 应用毛玻璃效果到容器视图
-    if (self.containerView) {
-        self.containerView.backgroundColor = [UIColor clearColor];
-        
-        for (UIView *subview in self.containerView.subviews) {
-            if ([subview isKindOfClass:[UIVisualEffectView class]] && subview.tag == 9999) {
-                [subview removeFromSuperview];
-            }
-        }
+	// 应用毛玻璃效果到容器视图
+	if (self.containerView) {
+		self.containerView.backgroundColor = [UIColor clearColor];
 
-        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-        UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-        blurEffectView.frame = self.containerView.bounds;
-        blurEffectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        blurEffectView.alpha = 1.0; 
-        blurEffectView.tag = 9999;
+		for (UIView *subview in self.containerView.subviews) {
+			if ([subview isKindOfClass:[UIVisualEffectView class]] && subview.tag == 9999) {
+				[subview removeFromSuperview];
+			}
+		}
 
-        [self.containerView insertSubview:blurEffectView atIndex:0];
+		UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+		UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+		blurEffectView.frame = self.containerView.bounds;
+		blurEffectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		blurEffectView.alpha = 1.0;
+		blurEffectView.tag = 9999;
 
-        [self setTextColorWhiteRecursivelyInView:self.containerView];
-        
-    }
+		[self.containerView insertSubview:blurEffectView atIndex:0];
+
+		[self setTextColorWhiteRecursivelyInView:self.containerView];
+	}
 }
 
 %new
 - (void)setTextColorWhiteRecursivelyInView:(UIView *)view {
-    for (UIView *subview in view.subviews) {
-        if (![subview isKindOfClass:[UIVisualEffectView class]]) {
-            subview.backgroundColor = [UIColor clearColor];
-        }
+	for (UIView *subview in view.subviews) {
+		if (![subview isKindOfClass:[UIVisualEffectView class]]) {
+			subview.backgroundColor = [UIColor clearColor];
+		}
 
-        if ([subview isKindOfClass:[UILabel class]]) {
-            UILabel *label = (UILabel *)subview;
-            label.textColor = [UIColor whiteColor];
-        }
+		if ([subview isKindOfClass:[UILabel class]]) {
+			UILabel *label = (UILabel *)subview;
+			label.textColor = [UIColor whiteColor];
+		}
 
-        if ([subview isKindOfClass:[UIButton class]]) {
-            UIButton *button = (UIButton *)subview;
-            [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        }
-        
-        [self setTextColorWhiteRecursivelyInView:subview];
-    }
+		if ([subview isKindOfClass:[UIButton class]]) {
+			UIButton *button = (UIButton *)subview;
+			[button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+		}
+
+		[self setTextColorWhiteRecursivelyInView:subview];
+	}
 }
 %end
 

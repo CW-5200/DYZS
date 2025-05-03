@@ -713,27 +713,21 @@
 				}
 
 				if (hasImageView) {
-					// 默认隐藏背景
-					BOOL shouldShowBackground = NO;
+					BOOL shouldShowBackground = YES;
 
 					// 获取当前选中的索引
 					NSInteger selectedIndex = self.yy_viewController.selectedIndex;
-					// 如果索引有效，检查当前选中的是什么类型的按钮
-					if (selectedIndex >= 0 && selectedIndex < buttonTypes.count) {
-						NSString *selectedType = buttonTypes[selectedIndex];
-
-						if ([selectedType isEqualToString:@"message"] || [selectedType isEqualToString:@"profile"]) {
-							shouldShowBackground = YES;
-						} 
+					// 如果索引非0，不隐藏背景
+					if (selectedIndex != 0) {
+						shouldShowBackground = NO;
 					}
-					subview.hidden = !shouldShowBackground;
+					subview.hidden = shouldShowBackground;
 					break;
 				}
 			}
 		}
-	} else {
 	}
-// 隐藏分隔虾线
+    // 隐藏分隔虾线
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableFullScreen"]) {
 				for (UIView *subview in self.subviews) {
 					if (![subview isKindOfClass:[UIView class]]) continue;
@@ -746,7 +740,6 @@
 					}
 				}
 			}
-// 隐藏分割虾线结束
 }
 
 %end
@@ -766,16 +759,18 @@
 
 %end
 
+// 隐藏状态栏
 %hook AWEFeedRootViewController
-
 - (BOOL)prefersStatusBarHidden {
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisHideStatusbar"]) {
-		return YES;
-	} else {
-		return %orig;
-	}
+    if([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisHideStatusbar"]){
+        return YES;
+    } else {
+        if (class_getInstanceMethod([self class], @selector(prefersStatusBarHidden)) != class_getInstanceMethod([%c(AWEFeedRootViewController) class], @selector(prefersStatusBarHidden))) {
+            return %orig;
+        }
+        return NO;
+    }
 }
-
 %end
 
 %hook AWEFeedTemplateAnchorView
@@ -1308,8 +1303,7 @@
 // 隐藏搜同款
 %hook ACCStickerContainerView
 - (void)layoutSubviews {
-	// 类型安全检查 + 隐藏逻辑
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideInteractionSearch"]) {
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideSearchSame"]) {
 		if ([self respondsToSelector:@selector(removeFromSuperview)]) {
 			[self removeFromSuperview];
 		}
@@ -1412,6 +1406,27 @@
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCellularAlert"]) {
 		self.hidden = YES;
 	}
+}
+%end
+
+// 隐藏直播间商品信息
+%hook IESECLivePluginLayoutView
+- (void)layoutSubviews {
+  %orig;
+  if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideLiveGoodsMsg"]) {
+    [self removeFromSuperview];
+  }
+}
+%end
+
+// 隐藏直播间点赞动画
+%hook HTSLiveDiggView
+- (void)setIconImageView:(UIImageView *)arg1 {
+  if (DYYYGetBool(@"DYYYHideLiveLikeAnimation")) {
+    %orig(nil); 
+  } else {
+    %orig(arg1);
+  }
 }
 %end
 

@@ -79,11 +79,21 @@ static void reapplyHidingToAllElements(HideUIButton *button) {
 	[button hideUIElements];
 }
 static void initTargetClassNames(void) {
-	targetClassNames = @[
-		@"AWEHPTopBarCTAContainer", @"AWEHPDiscoverFeedEntranceView", @"AWELeftSideBarEntranceView", @"DUXBadge", @"AWEBaseElementView", @"AWEElementStackView",
-		@"AWEPlayInteractionDescriptionLabel", @"AWEUserNameLabel", @"AWEStoryProgressSlideView", @"AWEStoryProgressContainerView", @"ACCEditTagStickerView", @"AWEFeedTemplateAnchorView",
-		@"AWESearchFeedTagView", @"AWEPlayInteractionSearchAnchorView", @"AFDRecommendToFriendTagView", @"AWELandscapeFeedEntryView", @"AWEFeedAnchorContainerView", @"AFDAIbumFolioView"
-	];
+    NSMutableArray<NSString *> *list = [@[
+        @"AWEHPTopBarCTAContainer", @"AWEHPDiscoverFeedEntranceView", @"AWELeftSideBarEntranceView",
+        @"DUXBadge", @"AWEBaseElementView", @"AWEElementStackView",
+        @"AWEPlayInteractionDescriptionLabel", @"AWEUserNameLabel",
+        @"AWEStoryProgressSlideView", @"AWEStoryProgressContainerView",
+        @"ACCEditTagStickerView", @"AWEFeedTemplateAnchorView",
+        @"AWESearchFeedTagView", @"AWEPlayInteractionSearchAnchorView",
+        @"AFDRecommendToFriendTagView", @"AWELandscapeFeedEntryView",
+        @"AWEFeedAnchorContainerView", @"AFDAIbumFolioView",@"AWENormalModeTabBar"
+    ] mutableCopy];
+    BOOL hideBottomBar = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTimeProgress"];
+    if (hideBottomBar) {
+        [list removeObject:@"AWENormalModeTabBar"];
+    }
+    targetClassNames = [list copy];
 }
 @implementation HideUIButton
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -92,7 +102,7 @@ static void initTargetClassNames(void) {
 		self.backgroundColor = [UIColor clearColor];
 		self.layer.cornerRadius = frame.size.width / 2;
 		self.layer.masksToBounds = YES;
-		self.isElementsHidden = NO;  // 默认显示
+		self.isElementsHidden = NO;
 		self.hiddenViewsList = [NSMutableArray array];
         
         // 设置默认状态为半透明
@@ -240,19 +250,32 @@ static void initTargetClassNames(void) {
 	return nil;
 }
 - (void)handlePan:(UIPanGestureRecognizer *)gesture {
-	if (self.isLocked)
-		return;
-	[self resetFadeTimer];  // 这会使按钮变为完全不透明
-	CGPoint translation = [gesture translationInView:self.superview];
-	CGPoint newCenter = CGPointMake(self.center.x + translation.x, self.center.y + translation.y);
-	newCenter.x = MAX(self.frame.size.width / 2, MIN(newCenter.x, self.superview.frame.size.width - self.frame.size.width / 2));
-	newCenter.y = MAX(self.frame.size.height / 2, MIN(newCenter.y, self.superview.frame.size.height - self.frame.size.height / 2));
-	self.center = newCenter;
-	[gesture setTranslation:CGPointZero inView:self.superview];
-	if (gesture.state == UIGestureRecognizerStateEnded) {
-		[[NSUserDefaults standardUserDefaults] setObject:NSStringFromCGPoint(self.center) forKey:@"DYYYHideUIButtonPosition"];
-		[[NSUserDefaults standardUserDefaults] synchronize];
-	}
+    if (self.isLocked) return;
+    [self resetFadeTimer];  // 保持交互时不透明
+    
+    CGPoint translation = [gesture translationInView:self.superview];
+    CGPoint newCenter = CGPointMake(self.center.x + translation.x, self.center.y + translation.y);
+    
+    // **新增安全区变量（上下各56点）**
+    CGFloat safeAreaTop = 56.0f;
+    CGFloat safeAreaBottom = 56.0f;
+    CGFloat buttonRadius = self.frame.size.width / 2; // 按钮半径（假设为正方形）
+    
+    // **计算Y轴安全区边界**
+    CGFloat minY = safeAreaTop + buttonRadius;           // 顶部安全区 + 按钮半径（确保按钮上边缘距顶部56点）
+    CGFloat maxY = self.superview.frame.size.height - safeAreaBottom - buttonRadius; // 底部安全区 - 按钮半径
+    
+    // **边界检查（X轴保持原逻辑，Y轴应用安全区限制）**
+    newCenter.x = MAX(buttonRadius, MIN(newCenter.x, self.superview.frame.size.width - buttonRadius));
+    newCenter.y = MAX(minY, MIN(newCenter.y, maxY)); // **关键修改：限制Y轴移动范围**
+    
+    self.center = newCenter;
+    [gesture setTranslation:CGPointZero inView:self.superview];
+    
+    if (gesture.state == UIGestureRecognizerStateEnded) {
+        [[NSUserDefaults standardUserDefaults] setObject:NSStringFromCGPoint(self.center) forKey:@"DYYYHideUIButtonPosition"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
 }
 - (void)handleTap {
 	if (isAppInTransition)
@@ -272,7 +295,7 @@ static void initTargetClassNames(void) {
 	}
 }
 - (void)restoreAWEPlayInteractionProgressContainerView {
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"] || [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTimeProgress"]) {
         for (UIWindow *window in [UIApplication sharedApplication].windows) {
             [self recursivelyRestoreAWEPlayInteractionProgressContainerViewInView:window];
         }
@@ -281,7 +304,13 @@ static void initTargetClassNames(void) {
 
 - (void)recursivelyRestoreAWEPlayInteractionProgressContainerViewInView:(UIView *)view {
     if ([view isKindOfClass:NSClassFromString(@"AWEPlayInteractionProgressContainerView")]) {
-        view.hidden = NO;
+		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
+			// 如果设置了移除时间进度条，直接显示
+			view.hidden = NO;
+		} else {
+			// 否则恢复透明度
+			view.alpha = 1.0;
+		}
         return;
     }
 
@@ -313,7 +342,7 @@ static void initTargetClassNames(void) {
 }
 
 - (void)hideAWEPlayInteractionProgressContainerView {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"] || [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTimeProgress"]) {
             for (UIWindow *window in [UIApplication sharedApplication].windows) {
                     [self recursivelyHideAWEPlayInteractionProgressContainerViewInView:window];
                 }
@@ -322,7 +351,13 @@ static void initTargetClassNames(void) {
 
 - (void)recursivelyHideAWEPlayInteractionProgressContainerViewInView:(UIView *)view {
     if ([view isKindOfClass:NSClassFromString(@"AWEPlayInteractionProgressContainerView")]) {
-        view.hidden = YES;
+		if([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
+			// 如果设置了移除时间进度条
+			view.hidden = YES;
+		} else {
+			// 否则设置透明度为 0.0,可拖动
+        	view.alpha = 0.0;
+		}
         [self.hiddenViewsList addObject:view];
         return;
     }
@@ -474,7 +509,7 @@ static void initTargetClassNames(void) {
 	});
 }
 %end
-// 修改: 使用 viewWillAppear 和 loadView 来更早地显示按钮
+
 %hook AWEPlayInteractionViewController
 - (void)loadView {
     %orig;
